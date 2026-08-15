@@ -34,9 +34,7 @@ source venv/bin/activate       # macOS/Linux
 pip install -r requirements.txt
 
 
-# 3. Configure the database
-cp .env.example .env
-# Edit .env and set DATABASE_URL=<your postgres connection string>
+# Create new .env file and set DATABASE_URL=<your postgres connection string>
 
 # 4. Start the server
 python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
