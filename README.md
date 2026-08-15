@@ -21,6 +21,7 @@ AI-assisted task management platform built with **FastAPI**, **SQLAlchemy**, and
 git clone https://github.com/Sumitk-singh-dev/Task-Flow-.git
 cd Task-Flow-
 
+install python version 3.11
 # Create a fresh venv
 python -3.11 -m venv venv
 
