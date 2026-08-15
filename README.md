@@ -1,6 +1,5 @@
 # Task-Flow-
 Full-stack task manager (FastAPI + vanilla JS) with a quick-add feature that parses title, priority, and due date from plain text.
-# TaskFlow
 
 AI-assisted task management platform built with **FastAPI**, **SQLAlchemy**, and a vanilla JS frontend.
 
