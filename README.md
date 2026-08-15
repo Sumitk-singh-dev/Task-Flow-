@@ -22,7 +22,7 @@ git clone https://github.com/Sumitk-singh-dev/Task-Flow-.git
 cd Task-Flow-
 
 # Create a fresh venv
-python -m venv venv
+python -3.11 -m venv venv
 
 # Activate it — command depends on their shell:
 venv\Scripts\activate          # Windows PowerShell / CMD
