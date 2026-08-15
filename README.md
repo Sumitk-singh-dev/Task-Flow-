@@ -38,7 +38,7 @@ pip install -r requirements.txt
 DATABASE_URL=your_postgresql_connection_string
 
 # 4. Start the server
-python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+python -m uvicorn main:app --reload
 
 # 5. Open the frontend
 # Open frontend/index.html in your browser (or use VS Code Live Server)
