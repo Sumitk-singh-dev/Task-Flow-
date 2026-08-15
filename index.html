@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TaskFlow Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+ 
+<!-- ── Sidebar ─────────────────────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">⚡</span>
+    <span class="logo-text">TaskFlow</span>
+  </div>
+ 
+  <nav class="sidebar-nav">
+    <button class="nav-btn active" data-view="dashboard" onclick="showView('dashboard',this)">
+      <span>🏠</span> Dashboard
+    </button>
+    <button class="nav-btn" data-view="projects" onclick="showView('projects',this)">
+      <span>📁</span> Projects
+    </button>
+    <button class="nav-btn" data-view="tasks" onclick="showView('tasks',this)">
+      <span>✅</span> Tasks
+    </button>
+    <button class="nav-btn" data-view="users" onclick="showView('users',this)">
+      <span>👥</span> Users
+    </button>
+  </nav>
+ 
+  <div class="sidebar-footer">
+    <span id="api-status" class="status-dot offline" title="API Status">● API</span>
+  </div>
+</aside>
+ 
+<!-- ── Main ───────────────────────────────────────────────────────────────── -->
+<main class="main">
+ 
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
+ 
+  <!-- Loading overlay -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+ 
+  <!-- ── Dashboard View ─────────────────────────────────────────────────── -->
+  <section id="view-dashboard" class="view active">
+    <h1 class="page-title">Dashboard</h1>
+ 
+    <div class="stat-cards" id="stat-cards">
+      <div class="stat-card">
+        <div class="stat-label">Total Projects</div>
+        <div class="stat-value" id="s-projects">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Tasks</div>
+        <div class="stat-value" id="s-tasks">—</div>
+      </div>
+      <div class="stat-card todo-card">
+        <div class="stat-label">To Do</div>
+        <div class="stat-value" id="s-todo">—</div>
+      </div>
+      <div class="stat-card progress-card">
+        <div class="stat-label">In Progress</div>
+        <div class="stat-value" id="s-progress">—</div>
+      </div>
+      <div class="stat-card done-card">
+        <div class="stat-label">Done</div>
+        <div class="stat-value" id="s-done">—</div>
+      </div>
+    </div>
+ 
+    <h2 class="section-title">Per-Project Stats</h2>
+    <div class="table-wrap">
+      <table class="data-table" id="stats-table">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Total</th>
+            <th>To Do</th>
+            <th>In Progress</th>
+            <th>Done</th>
+            <th>Progress</th>
+          </tr>
+        </thead>
+        <tbody id="stats-body"></tbody>
+      </table>
+    </div>
+  </section>
+ 
+  <!-- ── Projects View ──────────────────────────────────────────────────── -->
+  <section id="view-projects" class="view">
+    <div class="view-header">
+      <h1 class="page-title">Projects</h1>
+      <!-- openProjectModal() ensures users are loaded before the modal opens -->
+      <button class="btn-primary" onclick="openProjectModal()">+ New Project</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Owner</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="projects-body"></tbody>
+      </table>
+    </div>
+  </section>
+ 
+  <!-- ── Tasks View ─────────────────────────────────────────────────────── -->
+  <section id="view-tasks" class="view">
+    <div class="view-header">
+      <h1 class="page-title">Tasks</h1>
+      <div class="header-actions">
+        <button class="btn-ghost" onclick="openQuickAddModal()">⚡ Quick Add</button>
+        <button class="btn-primary" onclick="openTaskModal()">+ New Task</button>
+      </div>
+    </div>
+ 
+    <div class="filters">
+      <!-- Search box — filters tasks by title in real time -->
+      <input
+        type="text"
+        id="search-tasks"
+        class="search-input"
+        placeholder="🔍 Search tasks…"
+      />
+ 
+      <!-- onchange calls loadTasks() to re-fetch tasks for the selected project -->
+      <select id="filter-project" onchange="loadTasks()">
+        <option value="">All Projects</option>
+      </select>
+      <!-- onchange calls renderTasksTable() — filters already-fetched data locally -->
+      <select id="filter-status" onchange="renderTasksTable()">
+        <option value="">All Statuses</option>
+        <option value="todo">To Do</option>
+        <option value="in_progress">In Progress</option>
+        <option value="done">Done</option>
+      </select>
+      <select id="filter-priority" onchange="renderTasksTable()">
+        <option value="">All Priorities</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+ 
+      <!-- Sort dropdown — sorts already-fetched data locally -->
+      <select id="sort-tasks" onchange="renderTasksTable()">
+        <option value="">Sort By…</option>
+        <option value="title-asc">Title A → Z</option>
+        <option value="title-desc">Title Z → A</option>
+        <option value="priority-high">Priority: High First</option>
+        <option value="priority-low">Priority: Low First</option>
+        <option value="status-asc">Status: To Do First</option>
+        <option value="status-done">Status: Done First</option>
+        <option value="due-asc">Due Date: Earliest</option>
+        <option value="due-desc">Due Date: Latest</option>
+        <option value="id-desc">Newest First</option>
+        <option value="id-asc">Oldest First</option>
+      </select>
+    </div>
+ 
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Project</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Due Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tasks-body"></tbody>
+      </table>
+    </div>
+  </section>
+ 
+  <!-- ── Users View ─────────────────────────────────────────────────────── -->
+  <section id="view-users" class="view">
+    <div class="view-header">
+      <h1 class="page-title">Users</h1>
+      <button class="btn-primary" onclick="openModal('modal-user')">+ New User</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <!-- Added Actions column so users can be deleted -->
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="users-body"></tbody>
+      </table>
+    </div>
+  </section>
+ 
+</main>
+ 
+<!-- ══════════════════════════════════════════════════════════════════════════
+     Modals
+══════════════════════════════════════════════════════════════════════════ -->
+ 
+<!-- Create User -->
+<div id="modal-user" class="modal-overlay" onclick="closeOnOverlay(event,'modal-user')">
+  <div class="modal">
+    <h2>New User</h2>
+    <form onsubmit="submitUser(event)">
+      <label>
+        Name
+        <input type="text" id="u-name" required placeholder="Sumit Kumar" />
+      </label>
+      <label>
+        Email
+        <input type="email" id="u-email" required placeholder="sumit@example.com" />
+      </label>
+      <label>
+        Password
+        <input type="password" id="u-password" required minlength="6"
+               placeholder="At least 6 characters" />
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="closeModal('modal-user')">Cancel</button>
+        <button type="submit" class="btn-primary">Create</button>
+      </div>
+    </form>
+  </div>
+</div>
+ 
+<!-- Create Project -->
+<div id="modal-project" class="modal-overlay" onclick="closeOnOverlay(event,'modal-project')">
+  <div class="modal">
+    <h2>New Project</h2>
+    <form onsubmit="submitProject(event)">
+      <label>
+        Project Name
+        <input type="text" id="p-name" required placeholder="My Awesome Project" />
+      </label>
+      <label>
+        Description
+        <textarea id="p-desc" rows="3" placeholder="Optional description…"></textarea>
+      </label>
+      <label>
+        Owner
+        <select id="p-owner" required></select>
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="closeModal('modal-project')">Cancel</button>
+        <button type="submit" class="btn-primary">Create</button>
+      </div>
+    </form>
+  </div>
+</div>
+ 
+<!-- Create Task -->
+<div id="modal-task" class="modal-overlay" onclick="closeOnOverlay(event,'modal-task')">
+  <div class="modal">
+    <h2>New Task</h2>
+    <form onsubmit="submitTask(event)">
+      <label>
+        Title
+        <input type="text" id="t-title" required placeholder="Task title" />
+      </label>
+      <label>
+        Description
+        <textarea id="t-desc" rows="2" placeholder="Optional description…"></textarea>
+      </label>
+      <label>
+        Project
+        <select id="t-project" required></select>
+      </label>
+      <label>
+        Status
+        <select id="t-status">
+          <option value="todo">To Do</option>
+          <option value="in_progress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+      </label>
+      <label>
+        Priority
+        <select id="t-priority">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
+      </label>
+      <label>
+        Due Date
+        <input type="text" id="t-due" placeholder='e.g. 2024-12-31 or "next friday"' />
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="closeModal('modal-task')">Cancel</button>
+        <button type="submit" class="btn-primary">Create</button>
+      </div>
+    </form>
+  </div>
+</div>
+ 
+<!-- Quick Add -->
+<div id="modal-quickadd" class="modal-overlay" onclick="closeOnOverlay(event,'modal-quickadd')">
+  <div class="modal">
+    <h2>⚡ Quick Add</h2>
+    <p class="modal-hint">
+      Describe the task in plain English. Priority and due date are picked up automatically —
+      e.g. "Fix login bug ASAP next friday".
+    </p>
+    <form onsubmit="submitQuickAdd(event)">
+      <label>
+        Description
+        <textarea id="qa-desc" rows="2" required
+                  placeholder='e.g. "Email client the invoice next monday, low priority"'></textarea>
+      </label>
+      <label>
+        Project
+        <select id="qa-project" required></select>
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="closeModal('modal-quickadd')">Cancel</button>
+        <button type="submit" class="btn-primary">Add Task</button>
+      </div>
+    </form>
+  </div>
+</div>
+ 
+<!-- Edit Task -->
+<div id="modal-edit-task" class="modal-overlay" onclick="closeOnOverlay(event,'modal-edit-task')">
+  <div class="modal">
+    <h2>Edit Task</h2>
+    <form onsubmit="submitEditTask(event)">
+      <input type="hidden" id="et-id" />
+      <label>
+        Title
+        <input type="text" id="et-title" required />
+      </label>
+      <label>
+        Description
+        <textarea id="et-desc" rows="2"></textarea>
+      </label>
+      <label>
+        Status
+        <select id="et-status">
+          <option value="todo">To Do</option>
+          <option value="in_progress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+      </label>
+      <label>
+        Priority
+        <select id="et-priority">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </label>
+      <label>
+        Due Date
+        <input type="text" id="et-due" placeholder="Leave blank to clear" />
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="closeModal('modal-edit-task')">Cancel</button>
+        <button type="submit" class="btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+ 
+<script src="script.js"></script>
+</body>
+</html>
