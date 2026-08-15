@@ -18,14 +18,20 @@ AI-assisted task management platform built with **FastAPI**, **SQLAlchemy**, and
 
 ## Quick Start
 
-```bash
-# 1. Activate virtual environment
-.svenv\Scripts\activate          # Windows
-source .svenv/bin/activate       # macOS / Linux
+git clone https://github.com/Sumitk-singh-dev/Task-Flow-.git
+cd Task-Flow-
 
-# 2. Install dependencies
-cd backend
+# Create a fresh venv
+python -m venv venv
+
+# Activate it — command depends on their shell:
+venv\Scripts\activate          # Windows PowerShell / CMD
+source venv/Scripts/activate   # Windows Git Bash
+source venv/bin/activate       # macOS/Linux
+
+# Install dependencies
 pip install -r requirements.txt
+
 
 # 3. Configure the database
 cp .env.example .env
